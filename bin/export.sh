@@ -6,5 +6,5 @@ rm -rf artifacts
 npx hardhat compile
 
 node scripts/exportABIs.js
-cp export/ABIs.json ../synr-app/client/config/.
-cp export/deployed.json ../synr-app/client/config/.
+cp export/ABIs.json ../eve-app/client/config/.
+cp export/deployed.json ../eve-app/client/config/.
