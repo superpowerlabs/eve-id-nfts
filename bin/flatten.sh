@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-npx hardhat flatten contracts/$1.sol > ./$1-flatten.sol
+if [[ ! -d 'tmp' ]]; then
+  mkdir tmp
+fi
+npx hardhat flatten contracts/$1.sol > ./tmp/$1-flatten.sol
