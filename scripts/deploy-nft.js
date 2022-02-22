@@ -8,15 +8,13 @@ const {assert} = require("chai")
 const hre = require("hardhat");
 const fs = require('fs-extra')
 const path = require('path')
-const requireOrMock = require('require-or-mock')
+const requireOrMock = require('require-or-mock');
 const ethers = hre.ethers
-
 const deployed = requireOrMock('export/deployed.json')
 
 async function currentChainId() {
   return (await ethers.provider.getNetwork()).chainId
 }
-
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -30,36 +28,46 @@ async function main() {
   const isLocalNode = /1337$/.test(chainId)
   const [deployer] = await ethers.getSigners()
 
-  if (!deployed[chainId].SynCityCoupons) {
-    console.error('It looks like SynCityCoupons has not been deployed on this network')
-    process.exit(1)
-  }
+  console.log(
+      "Deploying contracts with the account:",
+      deployer.address
+  );
 
-  const couponABI = require('../artifacts/contracts/SynCityCoupons.sol/SynCityCoupons.json').abi
-
-  const couponNft = new ethers.Contract(deployed[chainId].SynCityCoupons, couponABI, deployer)
-
-  console.log("Deploying contracts with the account:", deployer.address)
+  const network = chainId === 137 ? 'matic'
+      : chainId === 80001 ? 'mumbai'
+          : chainId === 1 ? 'ethereum'
+              : chainId === 42 ? 'kovan'
+                  : chainId === 3 ? 'ropsten'
+                      : 'localhost'
 
   console.log('Current chain ID', await currentChainId())
 
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
-    const validator = isLocalNode
+  const {NAME, SYMBOL, VALIDATOR, OPERATOR, TOKEN_URI} = process.env
+
+  const validator = isLocalNode
       ? '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65' // hardhat #4
-      : process.env.VALIDATOR
+      : VALIDATOR
+
+  const operator = isLocalNode
+      ? '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC' // hardhat #2
+      : OPERATOR
 
   assert.isTrue(validator.length === 42)
+  // assert.isTrue(operator.length === 42)
 
-  const SynCityBlueprints = await ethers.getContractFactory("SynCityBlueprints")
-  const nft = await SynCityBlueprints.deploy(couponNft.address, validator)
+  const EveIDNft = await ethers.getContractFactory("EveIDNft")
+  const nft = await EveIDNft.deploy(validator, NAME, SYMBOL, TOKEN_URI)
   await nft.deployed()
 
-  const addresses = {
-    SynCityBlueprints: nft.address
+  if (operator) {
+    await nft.setOperator(operator)
   }
 
-  await couponNft.setSwapper(nft.address)
+  const addresses = {
+    EveIDNft: nft.address
+  }
 
   if (!deployed[chainId]) {
     deployed[chainId] = {}
@@ -71,6 +79,18 @@ async function main() {
   const deployedJson = path.resolve(__dirname, '../export/deployed.json')
   await fs.ensureDir(path.dirname(deployedJson))
   await fs.writeFile(deployedJson, JSON.stringify(deployed, null, 2))
+
+  console.log(`
+To verify EveIDNft source code:
+    
+  npx hardhat verify --show-stack-traces \\
+      --network ${network} \\
+      ${nft.address}  \\
+      ${validator} \\
+      "${NAME}" \\
+      "${SYMBOL}" \\
+      "${TOKEN_URI}"    
+`)
 
 }
 
