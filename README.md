@@ -3,8 +3,31 @@
 Basic smart contract for EveID NFT
 
 ## Install
+
+First, on Mac and Linux, install NVM (https://github.com/nvm-sh/nvm)
+
+```
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+```
+
+on Windows, install nvm-windows (https://github.com/coreybutler/nvm-windows).
+
+The use nvm to install Node 16.
 ``` 
+nvm install v16
+```
+
+Then install pnpm globally:
+
+```
 npm i -g pnpm
+
+```
+
+then install the dependencies
+
+```
 pnpm i
 ```
 
