@@ -33,14 +33,15 @@ describe("EveIDNft", function () {
 
   async function initAndDeploy() {
     nft = await EveIDNft.deploy(
+        validator.address,
         "Eve ID Nft",
         "EVE",
-        validator.address,
         "https://nft.eve.id/meta/"
     )
     await nft.deployed()
     nftAddress = nft.address
     await nft.setOperator(operator.address)
+    await nft.startDistribution(10000)
   }
 
   async function configure() {
@@ -67,17 +68,15 @@ describe("EveIDNft", function () {
 
       const authCode = ethers.utils.id('a' + Math.random())
 
-      const hash = await nft.encodeForSignature(member1.address, authCode, 0)
+      const hash = await nft.encodeForSignature(member1.address, authCode)
       const signature = await signPackedData(hash)
 
-      await expect(await nft.connect(member1).claimFreeToken(authCode, 0, signature))
+      await expect(await nft.connect(member1).claimFreeToken(authCode, signature))
           .to.emit(nft, 'Transfer')
-          .withArgs(addr0, member1.address, 9)
+          .withArgs(addr0, member1.address, 1)
 
       assert.equal(await nft.usedCodes(authCode), member1.address)
 
-      const remaining = await nft.getRemaining(0)
-      assert.equal(remaining, 199)
 
     })
 
@@ -85,19 +84,19 @@ describe("EveIDNft", function () {
 
       let authCode = ethers.utils.id('a' + Math.random())
 
-      let hash = await nft.encodeForSignature(member1.address, authCode, 0)
+      let hash = await nft.encodeForSignature(member1.address, authCode)
       let signature = await signPackedData(hash)
 
-      await nft.connect(member1).claimFreeToken(authCode, 0, signature)
+      await nft.connect(member1).claimFreeToken(authCode, signature)
 
       authCode = ethers.utils.id('b' + Math.random())
-      hash = await nft.encodeForSignature(member1.address, authCode, 0)
+      hash = await nft.encodeForSignature(member1.address, authCode)
       signature = await signPackedData(hash)
 
-      await assertThrowsMessage(
-          nft.connect(member1).claimFreeToken(authCode, 0, signature),
-          'one pass per wallet'
-      )
+      // await assertThrowsMessage(
+      //     nft.connect(member1).claimFreeToken(authCode, signature),
+      //     'one pass per wallet'
+      // )
 
     })
 
@@ -105,13 +104,13 @@ describe("EveIDNft", function () {
 
       let authCode = ethers.utils.id('a' + Math.random())
 
-      let hash = await nft.encodeForSignature(member1.address, authCode, 0)
+      let hash = await nft.encodeForSignature(member1.address, authCode)
       let signature = await signPackedData(hash)
 
-      await nft.connect(member1).claimFreeToken(authCode, 0, signature)
+      await nft.connect(member1).claimFreeToken(authCode, signature)
 
       await assertThrowsMessage(
-          nft.connect(member1).claimFreeToken(authCode, 0, signature),
+          nft.connect(member1).claimFreeToken(authCode, signature),
           'authCode already used'
       )
 
@@ -129,17 +128,15 @@ describe("EveIDNft", function () {
 
       const authCode = ethers.utils.id('a' + Math.random())
 
-      const hash = await nft.encodeForSignature(member1.address, authCode, 4)
+      const hash = await nft.encodeForSignature(member1.address, authCode)
       const signature = await signPackedData(hash)
 
       await expect(await nft.connect(operator).giveawayToken(member1.address, authCode, signature))
           .to.emit(nft, 'Transfer')
-          .withArgs(addr0, member1.address, 9)
+          .withArgs(addr0, member1.address, 1)
 
       assert.equal(await nft.usedCodes(authCode), member1.address)
 
-      const remaining = await nft.getRemaining(4)
-      assert.equal(remaining, 79)
 
     })
 

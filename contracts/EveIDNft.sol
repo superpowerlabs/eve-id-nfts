@@ -85,10 +85,9 @@ contract EveIDNft is ERC721, Ownable {
 
   function claimFreeToken(
     bytes32 authCode,
-    uint256 typeIndex,
     bytes memory signature
   ) external {
-    _mintToken(_msgSender(), authCode, typeIndex, signature);
+    _mintToken(_msgSender(), authCode, signature);
   }
 
   function giveawayToken(
@@ -97,13 +96,12 @@ contract EveIDNft is ERC721, Ownable {
     bytes memory signature
   ) external {
     require(_msgSender() != address(0) && operators[_msgSender()], "forbidden");
-    _mintToken(to, authCode, 4, signature);
+    _mintToken(to, authCode, signature);
   }
 
   function _mintToken(
     address to,
     bytes32 authCode,
-    uint256 typeIndex,
     bytes memory signature
   ) internal {
     require(to != address(0), "invalid sender");
@@ -112,7 +110,7 @@ contract EveIDNft is ERC721, Ownable {
     require(usedCodes[authCode] == address(0), "authCode already used");
     // TODO check if next one is necessary
     //    require(balanceOf(to) == 0, "one pass per wallet");
-    require(isSignedByValidator(encodeForSignature(to, authCode, typeIndex), signature), "invalid signature");
+    require(isSignedByValidator(encodeForSignature(to, authCode), signature), "invalid signature");
     usedCodes[authCode] = to;
     _safeMint(to, nextTokenId++);
   }
@@ -126,8 +124,7 @@ contract EveIDNft is ERC721, Ownable {
 
   function encodeForSignature(
     address to,
-    bytes32 authCode,
-    uint256 typeIndex
+    bytes32 authCode
   ) public view returns (bytes32) {
     return
       keccak256(
@@ -135,8 +132,7 @@ contract EveIDNft is ERC721, Ownable {
           "\x19\x01", // EIP-191
           getChainId(),
           to,
-          authCode,
-          typeIndex
+          authCode
         )
       );
   }
