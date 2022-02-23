@@ -89,9 +89,9 @@ describe("EveIDNft", function () {
 
       await nft.connect(member1).claimFreeToken(authCode, signature)
 
-      authCode = ethers.utils.id('b' + Math.random())
-      hash = await nft.encodeForSignature(member1.address, authCode)
-      signature = await signPackedData(hash)
+      // authCode = ethers.utils.id('b' + Math.random())
+      // hash = await nft.encodeForSignature(member1.address, authCode)
+      // signature = await signPackedData(hash)
 
       // await assertThrowsMessage(
       //     nft.connect(member1).claimFreeToken(authCode, signature),
