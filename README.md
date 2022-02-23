@@ -33,6 +33,8 @@ pnpm i
 
 ## Compile and testing
 
+First off, you need an env file. Create a file `.env` in the root and put inside the content of the file `example.env`. Later, you can put there real keys.
+
 ``` 
 npm run compile
 ```
