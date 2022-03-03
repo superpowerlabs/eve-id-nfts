@@ -9,10 +9,11 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 //import "hardhat/console.sol";
 
-contract EveIDNft is ERC721, Ownable {
+contract EveIDNft is ERC721, ERC721Enumerable, Ownable {
   using Address for address;
   using ECDSA for bytes32;
 
@@ -40,6 +41,18 @@ contract EveIDNft is ERC721, Ownable {
   ) ERC721(name, symbol) {
     setValidator(validator_);
     _baseTokenURI = baseTokenURI;
+  }
+
+  function _beforeTokenTransfer(
+    address from,
+    address to,
+    uint256 tokenId
+  ) internal override(ERC721, ERC721Enumerable) {
+    super._beforeTokenTransfer(from, to, tokenId);
+  }
+
+  function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721Enumerable) returns (bool) {
+    return super.supportsInterface(interfaceId);
   }
 
   function setValidator(address validator_) public onlyOwner {
@@ -83,10 +96,7 @@ contract EveIDNft is ERC721, Ownable {
     return string(abi.encodePacked(_baseTokenURI, "0"));
   }
 
-  function claimFreeToken(
-    bytes32 authCode,
-    bytes memory signature
-  ) external {
+  function claimFreeToken(bytes32 authCode, bytes memory signature) external {
     _mintToken(_msgSender(), authCode, signature);
   }
 
@@ -122,10 +132,7 @@ contract EveIDNft is ERC721, Ownable {
     return validator != address(0) && validator == _hash.recover(_signature);
   }
 
-  function encodeForSignature(
-    address to,
-    bytes32 authCode
-  ) public view returns (bytes32) {
+  function encodeForSignature(address to, bytes32 authCode) public view returns (bytes32) {
     return
       keccak256(
         abi.encodePacked(
