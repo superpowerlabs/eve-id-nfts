@@ -9,11 +9,12 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 //import "hardhat/console.sol";
 
-contract EveIDNft is ERC721, ERC721Enumerable, Ownable {
+contract EveIDNft is ERC721, ERC721Enumerable, ERC721Burnable, Ownable {
   using Address for address;
   using ECDSA for bytes32;
 
